@@ -1,0 +1,7 @@
+https://dummyjson.com/products
+1- implement at least two routes 
+2- hide navbar and footer from error page 
+3- fetch data using SSG 
+4- complete all the crud operation [get by id - post - put - delete by id]
+5- add filtration to your data by brand or category
+6- try to use Image component from nextjs 
