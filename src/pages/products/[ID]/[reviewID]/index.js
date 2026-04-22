@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 
-const index = () => {
+const ReviewPage = () => {
     const router = useRouter()
     const {ID , reviewID} = router.query
     return (
@@ -11,4 +11,4 @@ const index = () => {
     );
 };
 
-export default index;
+export default ReviewPage;

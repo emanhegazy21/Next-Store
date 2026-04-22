@@ -1,0 +1,99 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "title": "Aurora Glass Bottle",
+      "description": "A double-wall bottle that keeps drinks cool and looks sharp on any desk.",
+      "category": "lifestyle",
+      "brand": "Northwind",
+      "price": 24.99,
+      "stock": 18,
+      "thumbnail": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=900&q=80",
+      "createdAt": "2026-04-22T00:00:00.000Z",
+      "updatedAt": "2026-04-22T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "title": "Summit Trail Backpack",
+      "description": "A roomy day-pack with padded straps, laptop sleeve, and weather-ready fabric.",
+      "category": "travel",
+      "brand": "Peakline",
+      "price": 79.5,
+      "stock": 11,
+      "thumbnail": "https://images.unsplash.com/photo-1581605405669-fcdf81165afa?auto=format&fit=crop&w=900&q=80",
+      "createdAt": "2026-04-22T00:00:00.000Z",
+      "updatedAt": "2026-04-22T01:53:36.755Z"
+    },
+    {
+      "id": "4",
+      "title": "Ripple Wireless Headphones",
+      "description": "Balanced sound, 30-hour battery life, and soft ear cushions for long sessions.",
+      "category": "electronics",
+      "brand": "Ripple",
+      "price": 129.99,
+      "stock": 14,
+      "thumbnail": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80",
+      "createdAt": "2026-04-22T00:00:00.000Z",
+      "updatedAt": "2026-04-22T01:54:15.387Z"
+    },
+    {
+      "id": "5",
+      "title": "Studio Ceramic Mug",
+      "description": "Hand-finished ceramic mug designed for coffee, tea, and clean shelf aesthetics.",
+      "category": "kitchen",
+      "brand": "Clay & Co",
+      "price": 16.75,
+      "stock": 26,
+      "thumbnail": "https://images.unsplash.com/photo-1514228742587-6b1558fcf93a?auto=format&fit=crop&w=900&q=80",
+      "createdAt": "2026-04-22T00:00:00.000Z",
+      "updatedAt": "2026-04-22T00:00:00.000Z"
+    },
+    {
+      "id": "6",
+      "title": "Orbit Smart Watch",
+      "description": "Health tracking, message previews, and a lightweight aluminum case.",
+      "category": "wearables",
+      "brand": "Orbit",
+      "price": 189,
+      "stock": 7,
+      "thumbnail": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=900&q=80",
+      "createdAt": "2026-04-22T00:00:00.000Z",
+      "updatedAt": "2026-04-22T00:00:00.000Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "firstName": "Eman",
+      "lastName": "Hassan",
+      "email": "eman@example.com",
+      "role": "admin",
+      "phone": "+20 100 000 0001",
+      "city": "Cairo",
+      "createdAt": "2026-04-22T00:00:00.000Z",
+      "updatedAt": "2026-04-22T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "firstName": "Omar",
+      "lastName": "Nabil",
+      "email": "omar@example.com",
+      "role": "customer",
+      "phone": "+20 100 000 0002",
+      "city": "Alexandria",
+      "createdAt": "2026-04-22T00:00:00.000Z",
+      "updatedAt": "2026-04-22T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "firstName": "Salma",
+      "lastName": "Adel",
+      "email": "salma@example.com",
+      "role": "customer",
+      "phone": "+20 100 000 0003",
+      "city": "Giza",
+      "createdAt": "2026-04-22T00:00:00.000Z",
+      "updatedAt": "2026-04-22T00:00:00.000Z"
+    }
+  ]
+}

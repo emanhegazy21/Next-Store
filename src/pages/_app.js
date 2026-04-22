@@ -1,4 +1,4 @@
-// import "@/styles/globals.css";
+import "@/styles/globals.css";
 import NavBar from "@/components/NavBar";
 import FooterComponent from "@/components/FooterComponent";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -15,8 +15,8 @@ export default function App({ Component, pageProps }) {
   return (
     <>
       <NavBar />
-      <div className="container">
-        <Component {...pageProps} />;
+      <div className="d-flex flex-column min-vh-100">
+        <Component {...pageProps} />
         <FooterComponent />
       </div>
     </>

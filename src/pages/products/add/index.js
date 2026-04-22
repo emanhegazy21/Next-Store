@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
+import { getAllProducts } from "@/lib/dbConnect";
 
-const AddProduct = () => {
+const AddProduct = ({ categories }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     price: "",
@@ -13,17 +13,8 @@ const AddProduct = () => {
     category: "",
     brand: "",
     stock: "",
+    thumbnail: "",
   });
-
-  useEffect(() => {
-    fetch("https://dummyjson.com/products/categories")
-      .then((res) => res.json())
-      .then((data) => {
-        const categoryNames = typeof data[0] === 'object' ? data.map(c => c.slug) : data;
-        setCategories(categoryNames);
-      })
-      .catch(() => console.error("Failed to load categories"));
-  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,22 +23,36 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      const res = await fetch("https://dummyjson.com/products/add", {
+      const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          price: +formData.price,
-          stock: +formData.stock,
+          price: Number(formData.price),
+          stock: Number(formData.stock),
         }),
       });
       const data = await res.json();
-      setMessage(`✅ Product "${data.title}" added successfully!`);
-      setFormData({ title: "", price: "", description: "", category: "", brand: "", stock: "" });
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to add product.");
+      }
+
+      setMessage(`Product "${data.product.title}" added successfully!`);
+      setFormData({
+        title: "",
+        price: "",
+        description: "",
+        category: "",
+        brand: "",
+        stock: "",
+        thumbnail: "",
+      });
       setTimeout(() => setMessage(""), 5000);
-    } catch {
-      setMessage("❌ Failed to add product.");
+    } catch (error) {
+      setMessage(error.message || "Failed to add product.");
     } finally {
       setLoading(false);
     }
@@ -56,15 +61,18 @@ const AddProduct = () => {
   return (
     <div className="container py-5">
       <div className="mb-4">
-        <button 
-          className="btn btn-link text-decoration-none text-dark fw-bold p-0" 
+        <button
+          className="btn btn-link text-decoration-none text-dark fw-bold p-0"
           onClick={() => router.push("/products")}
         >
-          ← Back to Inventory
+          {"<-"} Back to Inventory
         </button>
       </div>
 
-      <div className="card border-0 shadow-lg rounded-4 overflow-hidden mx-auto" style={{ maxWidth: "800px" }}>
+      <div
+        className="card border-0 shadow-lg rounded-4 overflow-hidden mx-auto"
+        style={{ maxWidth: "800px" }}
+      >
         <div className="card-header bg-dark text-white p-4 text-center border-0">
           <h2 className="mb-1 fs-3">Add New Inventory Item</h2>
           <p className="mb-0 opacity-50 small">Fill in the details to list a new product</p>
@@ -72,7 +80,11 @@ const AddProduct = () => {
 
         <div className="card-body p-4 p-md-5">
           {message && (
-            <div className={`alert border-0 shadow-sm ${message.includes('❌') ? 'alert-danger' : 'alert-success'} mb-4 text-center fade show`}>
+            <div
+              className={`alert border-0 shadow-sm ${
+                message.toLowerCase().includes("failed") ? "alert-danger" : "alert-success"
+              } mb-4 text-center fade show`}
+            >
               {message}
             </div>
           )}
@@ -140,7 +152,7 @@ const AddProduct = () => {
                     <option value="">Select a category</option>
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}
+                        {cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")}
                       </option>
                     ))}
                   </select>
@@ -164,6 +176,21 @@ const AddProduct = () => {
               </div>
 
               <div className="col-12">
+                <div className="form-floating mb-3">
+                  <input
+                    type="url"
+                    name="thumbnail"
+                    className="form-control border-0 bg-light rounded-3"
+                    id="thumbnailInput"
+                    placeholder="Thumbnail URL"
+                    value={formData.thumbnail}
+                    onChange={handleChange}
+                  />
+                  <label htmlFor="thumbnailInput">Thumbnail URL (Optional)</label>
+                </div>
+              </div>
+
+              <div className="col-12">
                 <div className="form-floating mb-4">
                   <textarea
                     name="description"
@@ -179,8 +206,8 @@ const AddProduct = () => {
               </div>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-dark w-100 py-3 rounded-3 fw-bold shadow-sm mt-2"
               disabled={loading}
             >
@@ -191,7 +218,8 @@ const AddProduct = () => {
       </div>
 
       <style jsx>{`
-        .form-control:focus, .form-select:focus {
+        .form-control:focus,
+        .form-select:focus {
           box-shadow: none;
           background-color: #f0f0f0 !important;
           border: 1px solid #000 !important;
@@ -202,3 +230,15 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
+
+export async function getStaticProps() {
+  const products = await getAllProducts();
+  const categories = [...new Set(products.map((product) => product.category))];
+
+  return {
+    props: {
+      categories,
+    },
+    revalidate: 30,
+  };
+}

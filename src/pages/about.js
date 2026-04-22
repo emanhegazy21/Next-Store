@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const About = () => {
     return (
@@ -8,10 +9,12 @@ const About = () => {
                 <div className="row align-items-center g-5">
                     
                     <div className="col-lg-6 col-md-12">
-                        <img 
+                        <Image 
                             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000" 
                             alt="Store" 
                             className="img-fluid rounded-4 shadow-sm"
+                            width={1000}
+                            height={700}
                         />
                     </div>
 

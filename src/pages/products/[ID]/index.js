@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { getProductById, getProductPaths } from "@/lib/dbConnect";
 
 const ProductDetail = ({ product }) => {
   const router = useRouter();
+
   const [formData, setFormData] = useState({
     title: product.title,
     price: product.price,
     description: product.description,
+    category: product.category,
+    brand: product.brand,
+    stock: product.stock,
+    thumbnail: product.thumbnail,
   });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,36 +21,56 @@ const ProductDetail = ({ product }) => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      const res = await fetch(`https://dummyjson.com/products/${product.id}`, {
+      const res = await fetch(`/api/products/${product._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      setMessage(`✅ Updated successfully!`);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Update failed.");
+      }
+
+      setFormData({
+        title: data.product.title,
+        price: data.product.price,
+        description: data.product.description,
+        category: data.product.category,
+        brand: data.product.brand,
+        stock: data.product.stock,
+        thumbnail: data.product.thumbnail,
+      });
+      setMessage("Updated successfully.");
       setTimeout(() => setMessage(""), 3000);
-    } catch {
-      setMessage("❌ Update failed.");
+    } catch (error) {
+      setMessage(error.message || "Update failed.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
     setLoading(true);
+
     try {
-      const res = await fetch(`https://dummyjson.com/products/${product.id}`, {
+      const res = await fetch(`/api/products/${product._id}`, {
         method: "DELETE",
       });
       const data = await res.json();
-      if (data.isDeleted) {
-        setMessage(`🗑️ Product deleted! Redirecting...`);
-        setTimeout(() => router.push("/products"), 1500);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Delete failed.");
       }
-    } catch {
-      setMessage("❌ Delete failed.");
+
+      setMessage("Product deleted. Redirecting...");
+      setTimeout(() => router.push("/products"), 1500);
+    } catch (error) {
+      setMessage(error.message || "Delete failed.");
     } finally {
       setLoading(false);
     }
@@ -53,17 +79,21 @@ const ProductDetail = ({ product }) => {
   return (
     <div className="container py-5">
       <div className="d-flex justify-content-between align-items-center mb-5">
-        <button 
-          className="btn btn-link text-decoration-none text-dark fw-bold p-0" 
+        <button
+          className="btn btn-link text-decoration-none text-dark fw-bold p-0"
           onClick={() => router.push("/products")}
         >
-          ← Back to Collection
+          {"<-"} Back to Collection
         </button>
-        <span className="text-muted small">Product ID: #{product.id}</span>
+        <span className="text-muted small">Product ID: {product._id}</span>
       </div>
 
       {message && (
-        <div className={`alert border-0 shadow-sm ${message.includes('❌') ? 'alert-danger' : 'alert-success'} mb-4 fade show text-center`}>
+        <div
+          className={`alert border-0 shadow-sm ${
+            message.toLowerCase().includes("failed") ? "alert-danger" : "alert-success"
+          } mb-4 fade show text-center`}
+        >
           {message}
         </div>
       )}
@@ -73,8 +103,8 @@ const ProductDetail = ({ product }) => {
           <div className="product-image-container p-4 bg-white shadow-sm rounded-4 text-center mb-4">
             <div style={{ position: "relative", width: "100%", height: "400px" }}>
               <Image
-                src={product.thumbnail}
-                alt={product.title}
+                src={formData.thumbnail}
+                alt={formData.title}
                 fill
                 style={{ objectFit: "contain" }}
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -82,21 +112,21 @@ const ProductDetail = ({ product }) => {
               />
             </div>
           </div>
-          
+
           <div className="d-flex gap-2 mb-3">
-             <span className="badge rounded-pill bg-light text-dark border px-3 py-2">{product.category}</span>
-             <span className="badge rounded-pill bg-dark px-3 py-2">{product.brand}</span>
+            <span className="badge rounded-pill bg-light text-dark border px-3 py-2">
+              {formData.category}
+            </span>
+            <span className="badge rounded-pill bg-dark px-3 py-2">{formData.brand}</span>
           </div>
-          
-          <h1 className="display-5 fw-bold mb-3">{product.title}</h1>
+
+          <h1 className="display-5 fw-bold mb-3">{formData.title}</h1>
           <div className="d-flex align-items-center gap-3 mb-4">
             <h2 className="text-success mb-0 fw-bold">${formData.price}</h2>
-            <div className="vr"></div>
-            <span className="text-warning fw-bold">⭐ {product.rating}</span>
-            <span className="text-muted small">({product.stock} in stock)</span>
+            <span className="text-muted small">({formData.stock} in stock)</span>
           </div>
-          <p className="lead text-muted">{product.description}</p>
-          
+          <p className="lead text-muted">{formData.description}</p>
+
           <button
             className="btn btn-outline-danger rounded-pill px-4 py-2 mt-4 transition-all"
             onClick={handleDelete}
@@ -134,32 +164,104 @@ const ProductDetail = ({ product }) => {
                     id="priceInput"
                     placeholder="Price"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: +e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: Number(e.target.value) })
+                    }
                     required
                   />
                   <label htmlFor="priceInput">Price ($)</label>
                 </div>
 
-                <div className="form-floating mb-4">
+                <div className="form-floating mb-3">
                   <textarea
                     className="form-control border-0 bg-light rounded-3"
                     placeholder="Description"
                     id="descInput"
-                    style={{ height: "150px" }}
+                    style={{ height: "140px" }}
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                   ></textarea>
                   <label htmlFor="descInput">Full Description</label>
                 </div>
 
-                <button 
-                  type="submit" 
+                <div className="row g-3 mb-4">
+                  <div className="col-md-6">
+                    <div className="form-floating">
+                      <input
+                        type="text"
+                        className="form-control border-0 bg-light rounded-3"
+                        id="brandInput"
+                        placeholder="Brand"
+                        value={formData.brand}
+                        onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      />
+                      <label htmlFor="brandInput">Brand</label>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <div className="form-floating">
+                      <input
+                        type="text"
+                        className="form-control border-0 bg-light rounded-3"
+                        id="categoryInput"
+                        placeholder="Category"
+                        value={formData.category}
+                        onChange={(e) =>
+                          setFormData({ ...formData, category: e.target.value })
+                        }
+                        required
+                      />
+                      <label htmlFor="categoryInput">Category</label>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <div className="form-floating">
+                      <input
+                        type="number"
+                        className="form-control border-0 bg-light rounded-3"
+                        id="stockInput"
+                        placeholder="Stock"
+                        value={formData.stock}
+                        onChange={(e) =>
+                          setFormData({ ...formData, stock: Number(e.target.value) })
+                        }
+                        required
+                      />
+                      <label htmlFor="stockInput">Stock</label>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <div className="form-floating">
+                      <input
+                        type="url"
+                        className="form-control border-0 bg-light rounded-3"
+                        id="thumbInput"
+                        placeholder="Thumbnail URL"
+                        value={formData.thumbnail}
+                        onChange={(e) =>
+                          setFormData({ ...formData, thumbnail: e.target.value })
+                        }
+                      />
+                      <label htmlFor="thumbInput">Thumbnail URL</label>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
                   className="btn btn-dark w-100 py-3 rounded-3 fw-bold shadow-sm"
                   disabled={loading}
                 >
                   {loading ? (
                     <span className="spinner-border spinner-border-sm me-2"></span>
-                  ) : "Save Changes"}
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </form>
             </div>
@@ -190,14 +292,26 @@ const ProductDetail = ({ product }) => {
 export default ProductDetail;
 
 export async function getStaticPaths() {
-  const res = await fetch("https://dummyjson.com/products?limit=100");
-  const data = await res.json();
-  const paths = data.products.map((p) => ({ params: { ID: String(p.id) } }));
-  return { paths, fallback: false };
+  const ids = await getProductPaths();
+
+  return {
+    paths: ids.map((id) => ({ params: { ID: String(id) } })),
+    fallback: "blocking",
+  };
 }
 
 export async function getStaticProps({ params }) {
-  const res = await fetch(`https://dummyjson.com/products/${params.ID}`);
-  const product = await res.json();
-  return { props: { product } };
+  const product = await getProductById(params.ID);
+
+  if (!product) {
+    return {
+      notFound: true,
+      revalidate: 30,
+    };
+  }
+
+  return {
+    props: { product },
+    revalidate: 30,
+  };
 }

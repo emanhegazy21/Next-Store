@@ -7,7 +7,7 @@ const ContactUs = () => {
                 <div className="row justify-content-center text-center mb-5">
                     <div className="col-lg-6">
                         <h1 className="display-4 fw-bold text-dark">Contact Us</h1>
-                        <p className="lead text-secondary">We'd love to hear from you. Send us a message.</p>
+                        <p className="lead text-secondary">We&apos;d love to hear from you. Send us a message.</p>
                     </div>
                 </div>
 
