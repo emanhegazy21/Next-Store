@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { getAllProducts } from "@/lib/dbConnect";
+import { getAppServerSession } from "@/lib/auth";
+import { useSession } from "next-auth/react";
 
 const AddProduct = ({ categories }) => {
   const router = useRouter();
+  const { status } = useSession();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [formData, setFormData] = useState({
@@ -60,6 +63,7 @@ const AddProduct = ({ categories }) => {
 
   return (
     <div className="container py-5">
+      {status === "loading" && <p className="text-muted">Checking session...</p>}
       <div className="mb-4">
         <button
           className="btn btn-link text-decoration-none text-dark fw-bold p-0"
@@ -231,14 +235,25 @@ const AddProduct = ({ categories }) => {
 
 export default AddProduct;
 
-export async function getStaticProps() {
+export async function getServerSideProps(context) {
+  const session = await getAppServerSession(context.req, context.res);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/products",
+        permanent: false,
+      },
+    };
+  }
+
   const products = await getAllProducts();
   const categories = [...new Set(products.map((product) => product.category))];
 
   return {
     props: {
       categories,
+      session,
     },
-    revalidate: 30,
   };
 }

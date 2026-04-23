@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { getProductById, getProductPaths } from "@/lib/dbConnect";
+import { useSession } from "next-auth/react";
 
 const ProductDetail = ({ product }) => {
   const router = useRouter();
+  const { data: session } = useSession();
+  const isAuthenticated = Boolean(session);
 
   const [formData, setFormData] = useState({
     title: product.title,
@@ -127,23 +130,26 @@ const ProductDetail = ({ product }) => {
           </div>
           <p className="lead text-muted">{formData.description}</p>
 
-          <button
-            className="btn btn-outline-danger rounded-pill px-4 py-2 mt-4 transition-all"
-            onClick={handleDelete}
-            disabled={loading}
-          >
-            Delete from Inventory
-          </button>
+          {isAuthenticated && (
+            <button
+              className="btn btn-outline-danger rounded-pill px-4 py-2 mt-4 transition-all"
+              onClick={handleDelete}
+              disabled={loading}
+            >
+              Delete from Inventory
+            </button>
+          )}
         </div>
 
         <div className="col-lg-5 offset-lg-1">
-          <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
-            <div className="card-header bg-dark text-white p-4 border-0">
-              <h4 className="mb-0 fs-5">Management Portal</h4>
-              <p className="mb-0 opacity-50 small">Update product details instantly</p>
-            </div>
-            <div className="card-body p-4">
-              <form onSubmit={handleUpdate}>
+          {isAuthenticated ? (
+            <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
+              <div className="card-header bg-dark text-white p-4 border-0">
+                <h4 className="mb-0 fs-5">Management Portal</h4>
+                <p className="mb-0 opacity-50 small">Update product details instantly</p>
+              </div>
+              <div className="card-body p-4">
+                <form onSubmit={handleUpdate}>
                 <div className="form-floating mb-3">
                   <input
                     type="text"
@@ -252,20 +258,28 @@ const ProductDetail = ({ product }) => {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className="btn btn-dark w-100 py-3 rounded-3 fw-bold shadow-sm"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="spinner-border spinner-border-sm me-2"></span>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    className="btn btn-dark w-100 py-3 rounded-3 fw-bold shadow-sm"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="card border-0 shadow-sm rounded-4 p-4 bg-light">
+              <h4 className="fw-bold mb-2">Management Locked</h4>
+              <p className="text-muted mb-0">
+                Sign in to update or delete this product.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

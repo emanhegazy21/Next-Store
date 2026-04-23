@@ -1,4 +1,5 @@
 import { deleteProduct, getProductById, updateProduct } from "@/lib/dbConnect";
+import { requireApiSession } from "@/lib/auth";
 
 async function revalidateProductPages(res, id) {
   try {
@@ -26,6 +27,12 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "PUT") {
+    const session = await requireApiSession(req, res);
+
+    if (!session) {
+      return;
+    }
+
     const result = await updateProduct(id, req.body);
 
     if (result.error) {
@@ -41,6 +48,12 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "DELETE") {
+    const session = await requireApiSession(req, res);
+
+    if (!session) {
+      return;
+    }
+
     const result = await deleteProduct(id);
 
     if (result.error) {

@@ -1,7 +1,11 @@
 import React from "react";
 import Link from "next/link";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const NavBar = () => {
+  const { data: session, status } = useSession();
+  const isAuthenticated = Boolean(session);
+
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
       <div className="container-fluid">
@@ -36,11 +40,13 @@ const NavBar = () => {
                 Products
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link" href="/products/add">
-                Add Product
-              </Link>
-            </li>
+            {isAuthenticated && (
+              <li className="nav-item">
+                <Link className="nav-link" href="/products/add">
+                  Add Product
+                </Link>
+              </li>
+            )}
             <li className="nav-item">
               <Link className="nav-link" href="/contact">
                 Contact
@@ -57,6 +63,24 @@ const NavBar = () => {
               </Link>
             </li>
           </ul>
+          <div className="d-flex align-items-center gap-2">
+            {status === "loading" ? (
+              <span className="small text-muted">Checking session...</span>
+            ) : isAuthenticated ? (
+              <>
+                <span className="small text-muted">
+                  {session.user?.name || session.user?.email}
+                </span>
+                <button className="btn btn-outline-dark btn-sm" onClick={() => signOut()}>
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <button className="btn btn-dark btn-sm" onClick={() => signIn()}>
+                Sign In
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </nav>

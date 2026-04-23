@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getAllProducts } from "@/lib/dbConnect";
+import { useSession } from "next-auth/react";
 
 const ProductsPage = ({ products }) => {
+  const { data: session, status } = useSession();
+  const isAuthenticated = Boolean(session);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterValue, setFilterValue] = useState("");
@@ -23,6 +26,7 @@ const ProductsPage = ({ products }) => {
 
     return matchSearch && matchBrand && matchCategory;
   });
+  const visibleProducts = isAuthenticated ? filtered : filtered.slice(0, 4);
 
   const selectedItems = inventory
     .map((product) => ({
@@ -91,6 +95,11 @@ const ProductsPage = ({ products }) => {
         <p className="text-muted">
           Browse the ISR-powered catalog, filter it instantly, and buy selected items.
         </p>
+        {!isAuthenticated && status !== "loading" && (
+          <p className="small text-muted mb-0">
+            Sign in to unlock the full catalog and product management tools.
+          </p>
+        )}
       </div>
 
       {message && (
@@ -161,7 +170,7 @@ const ProductsPage = ({ products }) => {
       </div>
 
       <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-4">
-        <h5 className="mb-0 fw-bold">Results ({filtered.length})</h5>
+        <h5 className="mb-0 fw-bold">Results ({visibleProducts.length})</h5>
         <div className="d-flex gap-2 flex-wrap">
           <button
             type="button"
@@ -171,14 +180,16 @@ const ProductsPage = ({ products }) => {
           >
             {isBuying ? "Buying..." : `Buy Selected (${selectedCount})`}
           </button>
-          <Link href="/products/add" className="btn btn-dark rounded-pill px-4 shadow-sm">
-            + Add New Product
-          </Link>
+          {isAuthenticated && (
+            <Link href="/products/add" className="btn btn-dark rounded-pill px-4 shadow-sm">
+              + Add New Product
+            </Link>
+          )}
         </div>
       </div>
 
       <div className="row g-4">
-        {filtered.map((product) => (
+        {visibleProducts.map((product) => (
           <div key={product._id} className="col-sm-6 col-md-4 col-lg-3">
             <div className="product-card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white">
               <div className="image-wrapper p-3">
@@ -240,7 +251,7 @@ const ProductsPage = ({ products }) => {
         ))}
       </div>
 
-      {filtered.length === 0 && (
+      {visibleProducts.length === 0 && (
         <div className="text-center py-5">
           <p className="lead text-muted">No products found matching your search.</p>
         </div>

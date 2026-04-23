@@ -1,4 +1,5 @@
 import { createProduct, getAllProducts } from "@/lib/dbConnect";
+import { requireApiSession } from "@/lib/auth";
 
 async function revalidateProducts(res) {
   try {
@@ -16,6 +17,12 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
+    const session = await requireApiSession(req, res);
+
+    if (!session) {
+      return;
+    }
+
     const result = await createProduct(req.body);
 
     if (result.error) {
